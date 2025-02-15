@@ -38,7 +38,7 @@ jobs:
         uses: houseabsolute/actions-rust-cross@e10d0dcde72fe30fbc0912ddec9c57c070a16529 # v1.0.1
         with:
           target: ${{ matrix.target }}
-          args: "--locked --profile release-small"
+          args: "--locked --release"
           strip: true
 
       - name: Publish artifacts and release
