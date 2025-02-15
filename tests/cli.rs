@@ -54,7 +54,7 @@ fn reject_non_utf8_file() {
         .failure()
         .stdout("")
         .stderr(format!(
-            "{}: {}: Content is not valid UTF-8\n",
+            "{}: {}: Non-UTF-8 content\n",
             env!("CARGO_PKG_NAME"),
             file.path().display()
         ));
