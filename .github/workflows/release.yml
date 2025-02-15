@@ -7,7 +7,7 @@ jobs:
     name: release ${{ matrix.target }}
     runs-on: ubuntu-latest
 
-    permission:
+    permissions:
       contents: write
 
     strategy:
