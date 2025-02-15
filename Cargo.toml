@@ -6,6 +6,7 @@ license-file = "LICENSE"
 authors = ["ADD-SP <add_sp@outlook.com>"]
 description = "A CLI to append newline characters (LF) at the end of text file."
 repository = "https://github.com/ADD-SP/nlf"
+exclude = [".github/", "assets/"]
 
 [dependencies]
 clap = { version = "4", features = ["derive", "cargo", "help"] }
