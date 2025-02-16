@@ -7,21 +7,11 @@ on:
 
 jobs:
   release:
-    name: Release ${{ matrix.target }}
+    name: Release
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-
-    strategy:
-      matrix:
-        target:
-          # - aarch64-apple-darwin
-          - aarch64-unknown-linux-gnu
-          - aarch64-unknown-linux-musl
-          # - x86_64-apple-darwin
-          - x86_64-unknown-linux-gnu
-          - x86_64-unknown-linux-musl
+    env:
+      BUILD_TARGETS: aarch64-unknown-linux-gnu aarch64-unknown-linux-musl x86_64-unknown-linux-gnu x86_64-unknown-linux-musl
 
     steps:
       - name: Checkout
@@ -30,20 +20,37 @@ jobs:
       - name: Install cross-rs
         run: cargo install cross --git https://github.com/cross-rs/cross
 
-      - name: Build ${{ matrix.target }}
-        run: cross build --target ${{ matrix.target }} --profile release-small
+      - name: Build
+        run: |
+          for target in "$BUILD_TARGETS"; do
+            cross build --target $target --profile release-small
+          done
 
-      - name: Run tests ${{ matrix.target }}
-        run: cross test --target ${{ matrix.target }}
+      - name: Run tests
+        run: |
+          for target in "$BUILD_TARGETS"; do
+            cross test --target $target
+          done
 
       - name: Create tarball ${{ matrix.target }}
         run: |
-          tar -zcf nlf-${{ matrix.target }}.tar.gz target/${{ matrix.target }}/release-small/nlf
-          sha256sum nlf-${{ matrix.target }}.tar.gz > nlf-${{ matrix.target }}.tar.gz.sha256
+          for target in "$BUILD_TARGETS"; do
+            mkdir -p target/$target/release-small/nlf
+            cp target/$target/release-small/nlf target/$target/release-small/nlf/nlf
+            tar -zcf nlf-$target.tar.gz target/$target/release-small/nlf
+            sha256sum nlf-$target.tar.gz > nlf-$target.tar.gz.sha256
+          done
 
-      - uses: d1ceward/release-upload-action@05d2d7ddb670e9ab0cd51b5ea6c32cb7b98308aa # v4.0.0
+      - name: Build file list
+        id: filelist
+        run: |
+          list=""
+          for target in "$BUILD_TARGETS"; do
+            list="$list nlf-$target.tar.gz nlf-$target.tar.gz.sha256"
+          done
+
+      - uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            nlf-${{ matrix.target }}.tar.gz
-            nlf-${{ matrix.target }}.tar.gz.sha256
+            nlf-*.tar.gz
+            nlf-*.tar.gz.sha256
