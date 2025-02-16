@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  release:
+    name: Release ${{ matrix.target }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    strategy:
+      matrix:
+        target:
+          # - aarch64-apple-darwin
+          - aarch64-unknown-linux-gnu
+          - aarch64-unknown-linux-musl
+          # - x86_64-apple-darwin
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install cross-rs
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build ${{ matrix.target }}
+        run: cross build --target ${{ matrix.target }} --profile release-small
+
+      - name: Run tests ${{ matrix.target }}
+        run: cross test --target ${{ matrix.target }}
+
+      - name: Create tarball ${{ matrix.target }}
+        run: |
+          tar -zcf nlf-${{ matrix.target }}.tar.gz target/${{ matrix.target }}/release-small/nlf
+          sha256sum nlf-${{ matrix.target }}.tar.gz > nlf-${{ matrix.target }}.tar.gz.sha256
+
+      - uses: d1ceward/release-upload-action@05d2d7ddb670e9ab0cd51b5ea6c32cb7b98308aa # v4.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            nlf-${{ matrix.target }}.tar.gz
+            nlf-${{ matrix.target }}.tar.gz.sha256
