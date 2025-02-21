@@ -1,7 +1,7 @@
 [package]
 name = "nlf"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 license-file = "LICENSE"
 authors = ["ADD-SP <add_sp@outlook.com>"]
 description = "A CLI to append newline characters (LF) at the end of text file."
