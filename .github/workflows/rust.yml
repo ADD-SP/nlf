@@ -16,6 +16,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Upgrade Rust
+      run: |
+        # Sometimes, the GitHub Actions environment has an outdated version of Rust.
+        # For example, the new Rust 2024 edition is not available in action yet
+        # (2025-02-21 UTC+8).
+        rustup update stable
+
     - name: Build
       run: cargo build --verbose
 
