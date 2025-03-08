@@ -15,7 +15,7 @@ fn reject_nonexistent_file() {
     new_cmd()
         .arg(tempdir.path().join("file.txt"))
         .assert()
-        .failure()
+        .code(1)
         .stdout("")
         .stderr(format!(
             "{}: {}: No such file or directory (os error 2)\n",
@@ -33,7 +33,7 @@ fn reject_crlf_file() {
     new_cmd()
         .arg(file.path())
         .assert()
-        .failure()
+        .code(1)
         .stdout("")
         .stderr(format!(
             "{}: {}: File contains CRLF line endings\n",
@@ -51,7 +51,7 @@ fn reject_non_utf8_file() {
     new_cmd()
         .arg(file.path())
         .assert()
-        .failure()
+        .code(1)
         .stdout("")
         .stderr(format!(
             "{}: {}: Non-UTF-8 content\n",
