@@ -12,7 +12,7 @@ use std::{
 const HELP_TEMPLATE: &str = concat!(
     r#"
 {before-help}
-{name} {version}
+{name}
 
 {about}
 
@@ -21,8 +21,13 @@ const HELP_TEMPLATE: &str = concat!(
 {all-args}{after-help}
 
 Examples:
-{tab} # Append a newline to all .txt files under the `dir` directory if they don't already end with one
-{tab} find dir -type f -name '*.txt' -exec nlf {} \;
+{tab}# Append a newline to all .txt files under the `dir` directory if they don't already end with one
+{tab}find dir -type f -name '*.txt' -exec nlf {} \;
+
+Exit Codes:
+{tab}0: File has been fixed or already ends with a newline character
+{tab}1: Error occurred
+{tab}3: File doesn't end with a newline character (when using --check)
 
 Author:
 {tab}{author}
@@ -35,11 +40,25 @@ Repository:
     env!("CARGO_PKG_REPOSITORY")
 );
 
+const EXITCODE_PLEASE_FIX: u8 = 3;
+
 #[derive(Parser, Debug)]
 #[command(version, author, about, long_about = None)]
 #[command(help_template = HELP_TEMPLATE)]
 pub struct Args {
+    /// The file (not directory) to process.
     file: PathBuf,
+
+    #[clap(short, long, default_value = "false")]
+    /// Only check if the file ends with a newline character
+    /// without modifying it.
+    ///
+    /// Exit code 0: file ends with a newline character.
+    ///
+    /// Exit code 1: error occurred.
+    ///
+    /// Exit code 3: file doesn't end with a newline character.
+    check: bool,
 
     #[clap(long, hide(true))]
     otaku: bool,
@@ -114,6 +133,16 @@ fn main() -> ExitCode {
 
             if content.ends_with('\n') {
                 return ExitCode::SUCCESS;
+            }
+
+            if args.check {
+                eprintln!(
+                    "{}: {}: {}",
+                    env!("CARGO_PKG_NAME"),
+                    args.file.display(),
+                    Message::please_fix(otaku),
+                );
+                return ExitCode::from(EXITCODE_PLEASE_FIX);
             }
 
             match file.seek(std::io::SeekFrom::End(0)) {

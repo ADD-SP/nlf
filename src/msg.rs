@@ -44,6 +44,14 @@ impl Message<()> {
             Box::new(Message::<English>::FILE_CONTAINS_CRLF_LINE_ENDINGS)
         }
     }
+
+    pub fn please_fix(otaku: bool) -> Box<dyn std::fmt::Display> {
+        if otaku {
+            Box::new(Message::<Otaku>::PLEASE_FIX)
+        } else {
+            Box::new(Message::<English>::PLEASE_FIX)
+        }
+    }
 }
 
 impl Message<English> {
@@ -61,6 +69,11 @@ impl Message<English> {
         msg: Cow::Borrowed("File contains CRLF line endings"),
         _useless: PhantomData,
     };
+
+    const PLEASE_FIX: Self = Self {
+        msg: Cow::Borrowed("File doesn't end with LF, re-run without -c/--check to fix it"),
+        _useless: PhantomData,
+    };
 }
 
 impl Message<Otaku> {
@@ -76,8 +89,13 @@ impl Message<Otaku> {
 
     const FILE_CONTAINS_CRLF_LINE_ENDINGS: Self = Self {
         msg: Cow::Borrowed(
-            "啊啦~ (。-`ω´-) 居然敢用Windows的换行符，看来这个文件需要好好\"教育\"一下呢！",
+            "啊啦~ (。-`ω´-) 居然敢用 Windows 的换行符，看来这个文件需要好好\"教育\"一下呢！",
         ),
+        _useless: PhantomData,
+    };
+
+    const PLEASE_FIX: Self = Self {
+        msg: Cow::Borrowed("呜呼~ (。-`ω´-) 又遇到没有 LF 结尾的文件啦？再运行一次就能修好哦，不要用 -c/--check 参数哦！"),
         _useless: PhantomData,
     };
 }

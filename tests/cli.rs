@@ -107,3 +107,61 @@ fn append_newline() {
 
     file.assert("a\nb\n");
 }
+
+#[test]
+fn check_mode() {
+    let tempdir = assert_fs::TempDir::new().unwrap();
+    let file = tempdir.child("file.txt");
+    file.write_str("a\nb").unwrap();
+
+    new_cmd()
+        .arg(file.path())
+        .arg("-c")
+        .assert()
+        .code(3)
+        .stdout("")
+        .stderr(format!(
+            "{}: {}: File doesn't end with LF, re-run without -c/--check to fix it\n",
+            env!("CARGO_PKG_NAME"),
+            file.path().display()
+        ));
+
+    file.assert("a\nb");
+
+    new_cmd()
+        .arg(file.path())
+        .arg("--check")
+        .assert()
+        .code(3)
+        .stdout("")
+        .stderr(format!(
+            "{}: {}: File doesn't end with LF, re-run without -c/--check to fix it\n",
+            env!("CARGO_PKG_NAME"),
+            file.path().display()
+        ));
+
+    file.assert("a\nb");
+
+    let file = tempdir.child("file1.txt");
+    file.write_str("a\nb\n").unwrap();
+
+    new_cmd()
+        .arg(file.path())
+        .arg("-c")
+        .assert()
+        .success()
+        .stdout("")
+        .stderr("");
+
+    file.assert("a\nb\n");
+
+    new_cmd()
+        .arg(file.path())
+        .arg("-c")
+        .assert()
+        .success()
+        .stdout("")
+        .stderr("");
+
+    file.assert("a\nb\n");
+}
